@@ -24,7 +24,7 @@ function TaskBoard() {
         if (launchParams?.startParam) {
           const encodedGroupId = launchParams.startParam;
           try {
-            const decodedGroupId = atob(encodedGroupId);
+            const decodedGroupId = atob(encodedGroupId as string);
             console.log("Decoded Group ID:", decodedGroupId);
             setGroupId(decodedGroupId);
           } catch (error) {
