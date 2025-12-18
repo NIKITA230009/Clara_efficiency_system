@@ -16,7 +16,7 @@ function TaskBoard() {
   const [groupId, setGroupId] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(true);
-  
+
   // Безопасно получаем параметры запуска Telegram
   let launchParams: any = null;
   try {
@@ -28,24 +28,26 @@ function TaskBoard() {
   useEffect(() => {
     const initializeComponent = () => {
       try {
-        if (launchParams?.startParam) {
-          const encodedGroupId = String(launchParams.startParam);
-          try {
-            // Исправленная типизация для atob
-            const decodedGroupId = atob(encodedGroupId as string);
-            console.log("Decoded Group ID:", decodedGroupId);
-            setGroupId(decodedGroupId);
-          } catch (err) {
-            console.error("Error decoding group ID:", err);
-            setError("Invalid group ID format");
+        const startParam = launchParams?.startParam;
+
+        if (startParam) {
+          // 1. Возвращаем знаки '=', если их не хватает (нужно для atob)
+          let base64 = String(startParam).replace(/-/g, '+').replace(/_/g, '/');
+          while (base64.length % 4) {
+            base64 += '=';
           }
+
+          // 2. Декодируем
+          const decodedGroupId = atob(base64);
+          console.log("Успешный вход в группу:", decodedGroupId);
+          setGroupId(decodedGroupId);
+          setError(null);
         } else {
-          console.log("No start_param available");
-          setError("No group ID provided. Please open the app from a Telegram group.");
+          setError("ID группы не найден. Пожалуйста, запустите приложение через команду /webapp в группе.");
         }
       } catch (err) {
-        console.error("Error in initializeComponent:", err);
-        setError("An error occurred while initializing the component");
+        console.error("Ошибка декодирования:", err);
+        setError("Ошибка данных. Попробуйте снова из Telegram.");
       } finally {
         setIsLoading(false);
       }
@@ -53,6 +55,7 @@ function TaskBoard() {
 
     initializeComponent();
   }, [launchParams]);
+
 
   if (isLoading) {
     return <div className="p-8 font-sans">Загрузка данных...</div>;
