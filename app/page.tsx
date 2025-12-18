@@ -1,71 +1,92 @@
 "use client";
 
 import { Suspense, useEffect, useState } from 'react';
-import Image from "next/image";
-import TaskList from "./components/TaskList";
-import TaskForm from "./components/TaskForm";
-import { useLaunchParams } from "@telegram-apps/sdk-react";
 import dynamic from 'next/dynamic';
+import { useLaunchParams } from "@telegram-apps/sdk-react";
+import TaskForm from "./components/TaskForm";
+import TaskList from "./components/TaskList";
 
-// Создаем клиентский компонент для работы в Mini App
-const TaskBoardClient = dynamic(() => Promise.resolve(TaskBoard), {
-  ssr: false
-});
+const TaskBoardClient = dynamic(() => Promise.resolve(TaskBoard), { ssr: false });
 
 function TaskBoard() {
   const [groupId, setGroupId] = useState<string | null>(null);
-  const [error, setError] = useState<string | null>(null);
-  const [isLoading, setIsLoading] = useState<boolean>(true);
-
-  // Безопасно получаем параметры запуска Telegram
+  const [debugLog, setDebugLog] = useState<string>("Инициализация...");
+  
+  // Попробуем достать параметры через SDK
   let launchParams: any = null;
   try {
     launchParams = useLaunchParams();
-  } catch (e) {
-    console.error("SDK Error:", e);
-  }
+  } catch (e) {}
 
   useEffect(() => {
-    const initializeComponent = () => {
-      try {
-        const startParam = launchParams?.startParam;
+    // Эта функция соберет все данные, которые видит приложение
+    const runDiagnostics = () => {
+      let log = "--- DIAGNOSTICS ---\n";
+      
+      // 1. Проверяем URL браузера (самое надежное)
+      const currentUrl = typeof window !== 'undefined' ? window.location.href : 'N/A';
+      log += `URL: ${currentUrl}\n\n`;
 
-        if (startParam) {
-          // 1. Возвращаем знаки '=', если их не хватает (нужно для atob)
-          let base64 = String(startParam).replace(/-/g, '+').replace(/_/g, '/');
+      // 2. Ищем параметр вручную в хеше (#) и поиске (?)
+      let rawParam = null;
+      if (typeof window !== 'undefined') {
+        const hash = window.location.hash;
+        const search = window.location.search;
+        
+        // Telegram может передавать данные в tgWebAppStartParam
+        const urlParams = new URLSearchParams(search);
+        const hashParams = new URLSearchParams(hash.replace('#', ''));
+        
+        const fromSearch = urlParams.get('tgWebAppStartParam');
+        const fromHash = hashParams.get('tgWebAppStartParam');
+        
+        log += `Search Param: ${fromSearch || 'нет'}\n`;
+        log += `Hash Param: ${fromHash || 'нет'}\n`;
+        
+        rawParam = fromSearch || fromHash;
+      }
+
+      // 3. Проверяем SDK
+      const sdkParam = launchParams?.startParam;
+      log += `SDK Param: ${sdkParam || 'нет'}\n`;
+
+      // ИТОГОВОЕ РЕШЕНИЕ
+      const finalParam = rawParam || sdkParam;
+
+      if (finalParam) {
+        log += `\n✅ НАЙДЕН КОД: ${finalParam}\n`;
+        try {
+          // Восстанавливаем Base64 (возвращаем =)
+          let base64 = String(finalParam).replace(/-/g, '+').replace(/_/g, '/');
           while (base64.length % 4) {
             base64 += '=';
           }
-
-          // 2. Декодируем
-          const decodedGroupId = atob(base64);
-          console.log("Успешный вход в группу:", decodedGroupId);
-          setGroupId(decodedGroupId);
-          setError(null);
-        } else {
-          setError("ID группы не найден. Пожалуйста, запустите приложение через команду /webapp в группе.");
+          const decoded = atob(base64);
+          log += `🔓 DECODED: ${decoded}`;
+          setGroupId(decoded);
+        } catch (e: any) {
+          log += `❌ Ошибка декодирования: ${e.message}`;
         }
-      } catch (err) {
-        console.error("Ошибка декодирования:", err);
-        setError("Ошибка данных. Попробуйте снова из Telegram.");
-      } finally {
-        setIsLoading(false);
+      } else {
+        log += `\n⛔ ПАРАМЕТР НЕ НАЙДЕН.\nПопробуйте перезапустить бота.`;
       }
+
+      setDebugLog(log);
     };
 
-    initializeComponent();
+    // Даем 500мс на полную загрузку Telegram
+    setTimeout(runDiagnostics, 500);
+    
   }, [launchParams]);
 
-
-  if (isLoading) {
-    return <div className="p-8 font-sans">Загрузка данных...</div>;
-  }
-
-  if (error && !groupId) {
+  if (!groupId) {
     return (
-      <div className="p-8 text-red-500 font-sans">
-        <h2 className="text-xl font-bold mb-2">Упс! Ошибка</h2>
-        <p>{error}</p>
+      <div className="p-4 font-mono text-xs break-all bg-gray-100 min-h-screen text-black">
+        <h1 className="text-lg font-bold mb-4 text-red-600">РЕЖИМ ОТЛАДКИ</h1>
+        <pre className="whitespace-pre-wrap">{debugLog}</pre>
+        <div className="mt-8 text-gray-500">
+          Сделайте скриншот этого экрана, если ID не определился.
+        </div>
       </div>
     );
   }
@@ -74,32 +95,21 @@ function TaskBoard() {
     <div className="grid grid-rows-[auto_1fr_auto] min-h-screen p-8 gap-8 font-sans">
       <header className="flex items-center justify-between border-b pb-4">
         <h1 className="text-2xl font-bold">Task Board</h1>
-        {groupId && (
-          <span className="bg-blue-100 text-blue-800 text-xs font-semibold px-2.5 py-0.5 rounded">
-            Group ID: {groupId}
-          </span>
-        )}
+        <span className="bg-green-100 text-green-800 text-xs px-2 py-1 rounded">
+          ID: {groupId}
+        </span>
       </header>
-
       <main className="flex flex-col gap-8">
-        {groupId && (
-          <>
-            <TaskForm groupId={groupId} />
-            <TaskList groupId={groupId} />
-          </>
-        )}
+        <TaskForm groupId={groupId} />
+        <TaskList groupId={groupId} />
       </main>
-
-      <footer className="flex justify-center text-sm text-gray-500 pt-4 border-t">
-        Powered by Clara Efficiency System
-      </footer>
     </div>
   );
 }
 
 export default function Home() {
   return (
-    <Suspense fallback={<div className="p-8">Инициализация...</div>}>
+    <Suspense fallback={<div>Загрузка...</div>}>
       <TaskBoardClient />
     </Suspense>
   );
