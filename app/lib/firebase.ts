@@ -1,7 +1,7 @@
 'use client';
 
 import { initializeApp } from "firebase/app";
-import { getFirestore, Firestore } from "firebase/firestore";
+import { getFirestore, Firestore, doc, getDoc, setDoc } from "firebase/firestore";
 
 // Здесь мы говорим программе: возьми эти ключи из файла .env.local
 const firebaseConfig = {
@@ -22,6 +22,32 @@ let db: Firestore;
 if (typeof window !== 'undefined') {
     app = initializeApp(firebaseConfig);
     db = getFirestore(app);
+}
+
+// Добавляем функцию здесь
+export async function getUserRole(userId: string) {
+    if (!db) return 'EMPLOYEE'; // Защита, если БД еще не инициализирована
+
+    try {
+        const userRef = doc(db, "users", userId);
+        const userSnap = await getDoc(userRef);
+
+        if (userSnap.exists()) {
+            return userSnap.data().role as string;
+        } else {
+            // Если пользователя нет в коллекции users, создаем его с ролью по умолчанию
+            // Это удобно: тебе не нужно вручную добавлять каждого сотрудника, 
+            // они сами появятся в базе как EMPLOYEE при первом входе.
+            await setDoc(userRef, {
+                role: 'EMPLOYEE',
+                lastSeen: new Date().toISOString()
+            });
+            return 'EMPLOYEE';
+        }
+    } catch (error) {
+        console.error("Error getting role:", error);
+        return 'EMPLOYEE';
+    }
 }
 
 export { db };
