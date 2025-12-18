@@ -7,7 +7,7 @@ import TaskForm from "./components/TaskForm";
 import { useLaunchParams } from "@telegram-apps/sdk-react";
 import dynamic from 'next/dynamic';
 
-// Créer un composant client-only pour le TaskBoard
+// Создаем клиентский компонент для работы в Mini App
 const TaskBoardClient = dynamic(() => Promise.resolve(TaskBoard), {
   ssr: false
 });
@@ -16,72 +16,87 @@ function TaskBoard() {
   const [groupId, setGroupId] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(true);
-  const launchParams = useLaunchParams();
+  
+  // Безопасно получаем параметры запуска Telegram
+  let launchParams: any = null;
+  try {
+    launchParams = useLaunchParams();
+  } catch (e) {
+    console.error("SDK Error:", e);
+  }
 
-  // Вместо старого блока используй этот:
   useEffect(() => {
-    if (typeof window !== 'undefined') {
-      // Попробуем достать параметр напрямую из URL, если SDK капризничает
-      const urlParams = new URLSearchParams(window.location.hash.split('?')[1]);
-      const startAppParam = urlParams.get('tgWebAppStartParam') || launchParams?.startParam;
-
-      if (startAppParam) {
-        try {
-          const decoded = atob(startAppParam as string);
-          setGroupId(decoded);
-          setError(null);
-        } catch (e) {
-          console.error("Decoding error", e);
-          setError("Invalid ID format");
+    const initializeComponent = () => {
+      try {
+        if (launchParams?.startParam) {
+          const encodedGroupId = String(launchParams.startParam);
+          try {
+            // Исправленная типизация для atob
+            const decodedGroupId = atob(encodedGroupId as string);
+            console.log("Decoded Group ID:", decodedGroupId);
+            setGroupId(decodedGroupId);
+          } catch (err) {
+            console.error("Error decoding group ID:", err);
+            setError("Invalid group ID format");
+          }
+        } else {
+          console.log("No start_param available");
+          setError("No group ID provided. Please open the app from a Telegram group.");
         }
+      } catch (err) {
+        console.error("Error in initializeComponent:", err);
+        setError("An error occurred while initializing the component");
+      } finally {
+        setIsLoading(false);
       }
-    }
+    };
+
+    initializeComponent();
   }, [launchParams]);
 
-  initializeComponent();
-}, [launchParams]);
+  if (isLoading) {
+    return <div className="p-8 font-sans">Загрузка данных...</div>;
+  }
 
-if (isLoading) {
-  return <div className="p-8">Loading...</div>;
-}
+  if (error && !groupId) {
+    return (
+      <div className="p-8 text-red-500 font-sans">
+        <h2 className="text-xl font-bold mb-2">Упс! Ошибка</h2>
+        <p>{error}</p>
+      </div>
+    );
+  }
 
-if (error) {
-  return <div className="p-8 text-red-500">{error}</div>;
-}
+  return (
+    <div className="grid grid-rows-[auto_1fr_auto] min-h-screen p-8 gap-8 font-sans">
+      <header className="flex items-center justify-between border-b pb-4">
+        <h1 className="text-2xl font-bold">Task Board</h1>
+        {groupId && (
+          <span className="bg-blue-100 text-blue-800 text-xs font-semibold px-2.5 py-0.5 rounded">
+            Group ID: {groupId}
+          </span>
+        )}
+      </header>
 
-if (!groupId) {
-  return <div className="p-8">Please provide a valid group ID</div>;
-}
+      <main className="flex flex-col gap-8">
+        {groupId && (
+          <>
+            <TaskForm groupId={groupId} />
+            <TaskList groupId={groupId} />
+          </>
+        )}
+      </main>
 
-return (
-  <div className="grid grid-rows-[auto_1fr_auto] min-h-screen p-8 gap-8">
-    <header className="flex items-center justify-between">
-      <Image
-        className="dark:invert"
-        src="/next.svg"
-        alt="Next.js logo"
-        width={100}
-        height={20}
-        priority
-      />
-      <h1 className="text-2xl font-bold">Task Board - Group {groupId}</h1>
-    </header>
-
-    <main className="flex flex-col gap-8">
-      <TaskForm groupId={groupId} />
-      <TaskList groupId={groupId} />
-    </main>
-
-    <footer className="flex justify-center text-sm text-gray-500">
-      Powered by Next.js
-    </footer>
-  </div>
-);
+      <footer className="flex justify-center text-sm text-gray-500 pt-4 border-t">
+        Powered by Clara Efficiency System
+      </footer>
+    </div>
+  );
 }
 
 export default function Home() {
   return (
-    <Suspense fallback={<div className="p-8">Loading...</div>}>
+    <Suspense fallback={<div className="p-8">Инициализация...</div>}>
       <TaskBoardClient />
     </Suspense>
   );
