@@ -24,7 +24,7 @@ if (typeof window !== 'undefined') {
     db = getFirestore(app);
 }
 
-// Добавляем функцию здесь
+//  функция для авторизация по id юзера
 export async function getUserRole(userId: string) {
     if (!db) return 'EMPLOYEE'; // Защита, если БД еще не инициализирована
 
