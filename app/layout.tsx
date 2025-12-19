@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
-import "./globals.css";
+import "./globals.css"; import Script from "next/script"; 
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -23,10 +23,15 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
-      <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
-      >
+    <html lang="ru">
+      <head>
+        {/* 2. ДОБАВЬ ВОТ ЭТОТ БЛОК. Без него Telegram не видит приложение */}
+        <Script
+          src="https://telegram.org/js/telegram-web-app.js"
+          strategy="beforeInteractive"
+        />
+      </head>
+      <body className="antialiased">
         {children}
       </body>
     </html>
