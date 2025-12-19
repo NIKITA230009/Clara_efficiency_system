@@ -54,6 +54,7 @@ function TaskBoard() {
       <header className="bg-white border-b p-6 flex justify-between items-center">
         <div>
           <h1 className="text-xl font-bold">Clara Efficiency</h1>
+          <p className="text-[10px] text-gray-400">Твой ID в системе: {(lp as any)?.initData?.user?.id || 'Не определен'}</p>
           <p className="text-xs text-gray-500">Группа: {groupId || "Личное"}</p>
         </div>
         <div className="text-right">
