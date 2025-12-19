@@ -14,57 +14,73 @@ function TaskBoard() {
   const [userRole, setUserRole] = useState<string>("EMPLOYEE");
   const [isLoading, setIsLoading] = useState(true);
 
+  // Добавляем переменную для вывода отладки на экран
+  const [debugData, setDebugData] = useState<string>("Жду данные...");
+
   const lp = useLaunchParams();
 
   useEffect(() => {
     const initApp = async () => {
       try {
-        console.log("Весь объект lp:", lp); 
-        
-        // ОСТАВЛЯЕМ ТОЛЬКО ОДНУ ЭТУ СТРОКУ (улучшенную):
-        const userId = (lp as any)?.initData?.user?.id?.toString() || 
-                       (window as any).Telegram?.WebApp?.initDataUnsafe?.user?.id?.toString();
+        // --- БЛОК ПОИСКА ID (ИСПРАВЛЕННЫЙ) ---
 
-        console.log("Достали userId:", userId);
+        // 1. Пробуем взять из SDK (твой способ)
+        let foundId = (lp as any)?.initData?.user?.id;
 
-        // 1. Получаем ID группы из startParam
+        // 2. Если SDK вернул пустоту, лезем напрямую в Telegram (страховка)
+        if (!foundId && typeof window !== 'undefined') {
+          const tg = (window as any).Telegram?.WebApp;
+          foundId = tg?.initDataUnsafe?.user?.id;
+        }
+
+        // Превращаем в строку
+        const userId = foundId?.toString();
+
+        // Показываем на экране, что мы нашли (для тебя)
+        setDebugData(`Найден ID: ${userId || 'НЕТ'}\nИсточник LP: ${!!lp}\nИсточник Window: ${!!((window as any).Telegram?.WebApp)}`);
+
+        // --- ЛОГИКА РОЛЕЙ ---
+        if (userId) {
+          console.log("ID найден, запрашиваем роль...", userId);
+          const role = await getUserRole(userId);
+          setUserRole(role);
+        }
+
+        // --- ЛОГИКА ГРУППЫ (оставляем как было) ---
         const startParam = lp?.startParam;
         if (startParam) {
           let base64 = String(startParam).replace(/-/g, '+').replace(/_/g, '/');
           while (base64.length % 4) base64 += '=';
-          const decoded = atob(base64);
-          setGroupId(decoded);
+          setGroupId(atob(base64));
         }
 
-        // 2. Получаем роль, используя тот userId, который мы объявили выше
-        if (userId) {
-          console.log("Ваш Telegram ID для поиска в базе:", userId);
-          const role = await getUserRole(userId);
-          setUserRole(role);
-        } else {
-          console.error("ID пользователя всё еще не найден!");
-        }
-
-      } catch (e) {
-        console.error("Ошибка инициализации:", e);
+      } catch (e: any) {
+        console.error("Ошибка:", e);
+        setDebugData(`Ошибка: ${e.message}`);
       } finally {
         setIsLoading(false);
       }
     };
 
-    initApp();
-  }, [lp]);
+    // Запускаем не сразу, а даем 100мс, чтобы Telegram точно подгрузился
+    setTimeout(initApp, 100);
 
-  if (isLoading) return <div className="p-8">Загрузка системы...</div>;
+  }, [lp]); // Перезапустится, если lp обновится
+
+  if (isLoading) return <div className="p-8">Загрузка...</div>;
 
   return (
     <div className="min-h-screen bg-gray-50 font-sans text-black">
-      {/* Шапка с ролью */}
       <header className="bg-white border-b p-6 flex justify-between items-center">
         <div>
           <h1 className="text-xl font-bold">Clara Efficiency</h1>
-          <p className="text-[10px] text-gray-400">Твой ID в системе: {(lp as any)?.initData?.user?.id || 'Не определен'}</p>
-          <p className="text-xs text-gray-500">Группа: {groupId || "Личное"}</p>
+
+          {/* БЛОК ОТЛАДКИ - ТЕПЕРЬ ТЫ УВИДИШЬ ВСЁ НА ЭКРАНЕ */}
+          <pre className="text-[10px] bg-gray-100 p-1 mt-1 rounded text-red-600 overflow-x-auto max-w-[200px]">
+            {debugData}
+          </pre>
+
+          <p className="text-xs text-gray-500 mt-1">Группа: {groupId || "Личное"}</p>
         </div>
         <div className="text-right">
           <span className={`text-[10px] font-bold px-2 py-1 rounded uppercase ${userRole === 'ADMIN' ? 'bg-red-100 text-red-700' : 'bg-blue-100 text-blue-700'
@@ -75,7 +91,6 @@ function TaskBoard() {
       </header>
 
       <main className="p-6 flex flex-col gap-6">
-        {/* ФОРМА: Видна только Админу и Менеджеру */}
         {(userRole === 'ADMIN' || userRole === 'MANAGER') ? (
           <div className="bg-white p-4 rounded-xl shadow-sm border">
             <h2 className="text-sm font-semibold mb-3">Новая задача</h2>
@@ -83,11 +98,10 @@ function TaskBoard() {
           </div>
         ) : (
           <div className="bg-blue-50 p-4 rounded-xl border border-blue-100 text-sm text-blue-800">
-            ℹ️ Вы зашли как сотрудник. Вы можете просматривать задачи, но не добавлять их.
+            ℹ️ Вы сотрудник.
           </div>
         )}
 
-        {/* СПИСОК: Виден всем */}
         <div className="bg-white p-4 rounded-xl shadow-sm border">
           <h2 className="text-sm font-semibold mb-3">Список задач</h2>
           <TaskList groupId={groupId || "default"} />
