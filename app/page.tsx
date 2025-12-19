@@ -19,7 +19,15 @@ function TaskBoard() {
   useEffect(() => {
     const initApp = async () => {
       try {
-        // 1. Получаем ID группы из startParam (как и раньше)
+        console.log("Весь объект lp:", lp); 
+        
+        // ОСТАВЛЯЕМ ТОЛЬКО ОДНУ ЭТУ СТРОКУ (улучшенную):
+        const userId = (lp as any)?.initData?.user?.id?.toString() || 
+                       (window as any).Telegram?.WebApp?.initDataUnsafe?.user?.id?.toString();
+
+        console.log("Достали userId:", userId);
+
+        // 1. Получаем ID группы из startParam
         const startParam = lp?.startParam;
         if (startParam) {
           let base64 = String(startParam).replace(/-/g, '+').replace(/_/g, '/');
@@ -28,14 +36,15 @@ function TaskBoard() {
           setGroupId(decoded);
         }
 
-        // 2. Получаем ID пользователя и его роль
-        // Пытаемся взять ID из данных запуска Telegram
-        const userId = (lp as any)?.initData?.user?.id?.toString();
+        // 2. Получаем роль, используя тот userId, который мы объявили выше
         if (userId) {
-          console.log("Ваш Telegram ID:", userId);
+          console.log("Ваш Telegram ID для поиска в базе:", userId);
           const role = await getUserRole(userId);
           setUserRole(role);
+        } else {
+          console.error("ID пользователя всё еще не найден!");
         }
+
       } catch (e) {
         console.error("Ошибка инициализации:", e);
       } finally {
