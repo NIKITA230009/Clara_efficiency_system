@@ -96,7 +96,7 @@ function TaskBoard() {
           <>
             <div className="bg-white p-4 rounded-xl shadow-sm border">
               <h2 className="text-sm font-semibold mb-3">Новая задача</h2>
-              <TaskForm groupId={groupId || "default"} />
+              <TaskForm/>
             </div>
 
             <div className="bg-white p-4 rounded-xl shadow-sm border">

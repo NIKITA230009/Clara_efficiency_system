@@ -3,5 +3,5 @@ export interface Task {
     title: string;
     completed: boolean;
     createdAt: Date;
-    groupId: string;
+    employeeId: string;
   }
