@@ -72,7 +72,7 @@ export default function EmployeeTable() {
                 <tbody className="divide-y divide-gray-100">
                     {employees.map((emp) => {
                         // ТЕПЕРЬ МОЖНО: мы добавили фигурные скобки и return
-                        const employeeTasks = tasks.filter(t => t.employeeId === emp.id && !t.completed);
+                        const employeeTasks = tasks.filter(t => t.employeeId === emp.id);
 
                         return (
                             <tr key={emp.id} className="hover:bg-gray-50 transition-colors text-black">
