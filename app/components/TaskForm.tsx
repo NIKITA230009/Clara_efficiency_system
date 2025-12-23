@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from 'react';
-import { addDoc, collection, getDocs } from 'firebase/firestore';
+import { addDoc, collection, deleteDoc, doc, getDocs, updateDoc } from 'firebase/firestore';
 import { db } from '@/app/lib/firebase';
 import { Employee } from '../types/employee';
 
@@ -42,7 +42,8 @@ export default function TaskForm() {
             setIsLoading(false);
         }
     };
-
+    
+    
     return (
         <form onSubmit={handleSubmit} className="space-y-3">
             {/* Выбор сотрудника */}
