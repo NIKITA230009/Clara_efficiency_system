@@ -1,14 +1,14 @@
 "use client";
 
 import { useState, useEffect } from 'react';
-import { collection, onSnapshot } from 'firebase/firestore'; 
+import { collection, onSnapshot } from 'firebase/firestore';
 import { db } from '@/app/lib/firebase';
 import { Employee } from '../types/employee';
 import { Task } from '../types/task';
 
 export default function EmployeeTable() {
     const [employees, setEmployees] = useState<Employee[]>([]);
-    const [tasks, setTasks] = useState<Task[]>([]); 
+    const [tasks, setTasks] = useState<Task[]>([]);
 
     useEffect(() => {
         // Подписка №1: Слушаем сотрудников
@@ -44,7 +44,7 @@ export default function EmployeeTable() {
                 <tbody className="divide-y divide-gray-100">
                     {employees.map((emp) => {
                         // ТЕПЕРЬ МОЖНО: мы добавили фигурные скобки и return
-                        const currentTask = tasks.find(t => t.employeeId === emp.id && !t.completed);
+                        const employeeTasks = tasks.filter(t => t.employeeId === emp.id && !t.completed);
 
                         return (
                             <tr key={emp.id} className="hover:bg-gray-50 transition-colors text-black">
@@ -53,8 +53,18 @@ export default function EmployeeTable() {
                                 <td className="px-4 py-3 text-sm font-medium text-green-600">
                                     {emp.basePremium} ₽
                                 </td>
-                                <td className="px-4 py-3 text-sm italic text-blue-600">
-                                    {currentTask ? currentTask.title : "—"}
+                                <td className="px-4 py-3 text-sm">
+                                    {employeeTasks.length > 0 ? (
+                                        <div className="flex flex-col gap-1">
+                                            {employeeTasks.map(task => (
+                                                <div key={task.id} className="bg-blue-50 text-blue-700 px-2 py-1 rounded border border-blue-100 text-[11px]">
+                                                    📌 {task.title}
+                                                </div>
+                                            ))}
+                                        </div>
+                                    ) : (
+                                        <span className="text-gray-400 italic">—</span>
+                                    )}
                                 </td>
                             </tr>
                         );
