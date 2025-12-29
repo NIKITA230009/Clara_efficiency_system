@@ -4,6 +4,7 @@ import { Suspense, useEffect, useState } from 'react';
 import dynamic from 'next/dynamic';
 import { useLaunchParams } from "@telegram-apps/sdk-react";
 import TaskForm from "./components/TaskForm";
+import PenaltyForm from "./components/PenaltyForm";
 import TaskList from "./components/TaskList";
 import EmployeeTable from './components/EmployeeTable';
 import { getUserRole } from './lib/firebase';
@@ -96,7 +97,13 @@ function TaskBoard() {
           <>
             <div className="bg-white p-4 rounded-xl shadow-sm border">
               <h2 className="text-sm font-semibold mb-3">Новая задача</h2>
-              <TaskForm/>
+              <TaskForm />
+            </div>
+
+            {/* НОВЫЙ БЛОК: Штрафы/Замечания */}
+            <div className="bg-white p-4 rounded-xl shadow-sm border border-red-100">
+              <h2 className="text-sm font-semibold mb-3 text-red-600">Система замечаний</h2>
+              <PenaltyForm />
             </div>
 
             <div className="bg-white p-4 rounded-xl shadow-sm border">
@@ -110,11 +117,11 @@ function TaskBoard() {
               ℹ️ Вы сотрудник.
             </div>
           )}
-
+        {/* 
         <div className="bg-white p-4 rounded-xl shadow-sm border">
           <h2 className="text-sm font-semibold mb-3">Список задач</h2>
-          <TaskList groupId={groupId || "default"} />
-        </div>
+          <TaskList groupId={''}/>
+        </div> */}
 
 
       </main>
