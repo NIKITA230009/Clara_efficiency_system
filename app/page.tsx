@@ -97,10 +97,10 @@ function TaskBoard() {
         <div>
           <h1 className="text-xl font-bold">Clara Efficiency</h1>
 
-          {/* КАЛЕНДАРЬ - ТЕПЕРЬ В ШАПКЕ ДЛЯ ВСЕХ */}
+          {/* КАЛЕНДАРЬ - ТЕПЕРЬ В ШАПКЕ ДЛЯ ВСЕХ
           <div className="flex items-center gap-1 mt-1">
             <span className="text-xs text-gray-500">Задачи на:</span>
-          </div>
+          </div> */}
 
           {/* БЛОК ОТЛАДКИ - ТЕПЕРЬ ТЫ УВИДИШЬ ВСЁ НА ЭКРАНЕ */}
           <pre className="text-[10px] bg-gray-100 p-1 mt-1 rounded text-red-600 overflow-x-auto max-w-[200px]">
@@ -151,8 +151,8 @@ function TaskBoard() {
                     <button className="text-xs font-bold text-blue-600 underline decoration-dotted italic">
                       {formattedDateString}
                     </button>} />
-                    
-                <TaskList userRole={userRole} />
+
+                <TaskList userRole={userRole} selectedDate={selectedDate} />
               </div>
 
               <div className="bg-white p-4 rounded-xl shadow-sm border">
