@@ -3,11 +3,16 @@
 import { Suspense, useEffect, useState } from 'react';
 import dynamic from 'next/dynamic';
 import { useLaunchParams } from "@telegram-apps/sdk-react";
+import DatePicker, { registerLocale } from "react-datepicker";
+import "react-datepicker/dist/react-datepicker.css";
+import { ru } from 'date-fns/locale/ru';
 import TaskForm from "./components/TaskForm";
 import PenaltyForm from "./components/PenaltyForm";
 import TaskList from "./components/TaskList";
 import EmployeeTable from './components/EmployeeTable';
 import { getUserRole } from './lib/firebase';
+
+registerLocale('ru', ru);
 
 const TaskBoardClient = dynamic(() => Promise.resolve(TaskBoard), { ssr: false });
 
@@ -15,6 +20,14 @@ function TaskBoard() {
   const [groupId, setGroupId] = useState<string | null>(null);
   const [userRole, setUserRole] = useState<string>("EMPLOYEE");
   const [isLoading, setIsLoading] = useState(true);
+  const currentDate = new Date().toLocaleDateString('ru-RU', {
+    day: 'numeric',
+    month: 'long', // 'long' выведет "января", 'numeric' выведет "01"
+
+
+  });
+
+  const [selectedDate, setSelectedDate] = useState(new Date());
 
   // Добавляем переменную для вывода отладки на экран
   const [debugData, setDebugData] = useState<string>("Жду данные...");
@@ -71,11 +84,32 @@ function TaskBoard() {
 
   if (isLoading) return <div className="p-8">Загрузка...</div>;
 
+  const formattedDateString = selectedDate.toLocaleDateString('ru-RU', {
+    day: 'numeric',
+    month: 'long',
+  });
+
+
+
   return (
     <div className="min-h-screen bg-gray-50 font-sans text-black">
       <header className="bg-white border-b p-6 flex justify-between items-center">
         <div>
           <h1 className="text-xl font-bold">Clara Efficiency</h1>
+
+          {/* КАЛЕНДАРЬ - ТЕПЕРЬ В ШАПКЕ ДЛЯ ВСЕХ */}
+          <div className="flex items-center gap-1 mt-1">
+            <span className="text-xs text-gray-500">Задачи на:</span>
+            <DatePicker
+              selected={selectedDate}
+              onChange={(date: Date | null) => setSelectedDate(date || new Date())}
+              locale="ru"
+              dateFormat="d MMMM"
+              customInput={
+                <button className="text-xs font-bold text-blue-600 underline decoration-dotted italic">
+                  {formattedDateString}
+                </button>} />
+          </div>
 
           {/* БЛОК ОТЛАДКИ - ТЕПЕРЬ ТЫ УВИДИШЬ ВСЁ НА ЭКРАНЕ */}
           <pre className="text-[10px] bg-gray-100 p-1 mt-1 rounded text-red-600 overflow-x-auto max-w-[200px]">
@@ -114,15 +148,15 @@ function TaskBoard() {
         ) :
           (
             <>
-            <div className="bg-white p-4 rounded-xl shadow-sm border">
-              <h2 className="text-sm font-semibold mb-3">Текущие задачи</h2>
-              <TaskList userRole={userRole}/>
-            </div>
+              <div className="bg-white p-4 rounded-xl shadow-sm border">
+                <h2 className="text-sm font-semibold mb-3">Текущие задачи на {currentDate}</h2>
+                <TaskList userRole={userRole} />
+              </div>
 
-             <div className="bg-white p-4 rounded-xl shadow-sm border">
-              <h2 className="text-sm font-semibold mb-3">Список замечаний</h2>
-              <EmployeeTable />
-            </div>
+              <div className="bg-white p-4 rounded-xl shadow-sm border">
+                <h2 className="text-sm font-semibold mb-3">Список замечаний</h2>
+                <EmployeeTable />
+              </div>
             </>
           )}
         {/* 
