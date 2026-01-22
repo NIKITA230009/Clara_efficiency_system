@@ -8,10 +8,13 @@ import { Task } from '@/app/types/task';
 
 interface TaskItemProps {
     task: Task;
+    userRole: string;
 }
 
-export default function TaskItem({ task }: TaskItemProps) {
+export default function TaskItem({ task, userRole }: TaskItemProps) {
     const [isCompleted, setIsCompleted] = useState(task.completed);
+
+    const isAdminOrManager = userRole === 'ADMIN' || userRole === 'MANAGER';
 
     const toggleComplete = async () => {
         setIsCompleted(!isCompleted);
@@ -36,13 +39,14 @@ export default function TaskItem({ task }: TaskItemProps) {
                 <span className={isCompleted ? 'line-through text-gray-500' : ''}>
                     {task.title}
                 </span>
-            </div>
-            <button
-                onClick={deleteTask}
-                className="text-red-500 hover:text-red-700"
-            >
-                Delete
-            </button>
+            </div>{isAdminOrManager && (
+                <button
+                    onClick={deleteTask}
+                    className="text-red-500 hover:text-red-700"
+                >
+                    Delete
+                </button>
+            )}
         </li>
     );
 }

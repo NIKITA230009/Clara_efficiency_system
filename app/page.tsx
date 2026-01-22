@@ -113,10 +113,17 @@ function TaskBoard() {
           </>
         ) :
           (
+            <>
             <div className="bg-white p-4 rounded-xl shadow-sm border">
               <h2 className="text-sm font-semibold mb-3">Текущие задачи</h2>
+              <TaskList userRole={userRole}/>
+            </div>
+
+             <div className="bg-white p-4 rounded-xl shadow-sm border">
+              <h2 className="text-sm font-semibold mb-3">Список замечаний</h2>
               <EmployeeTable />
             </div>
+            </>
           )}
         {/* 
         <div className="bg-white p-4 rounded-xl shadow-sm border">
