@@ -14,7 +14,7 @@ interface TaskItemProps {
 export default function TaskItem({ task, userRole }: TaskItemProps) {
     const [isCompleted, setIsCompleted] = useState(task.completed);
 
-    const isAdminOrManager = userRole === 'ADMIN' || userRole === 'MANAGER';
+    const isAdminOrManager = userRole?.toUpperCase() === 'ADMIN' || userRole === 'MANAGER';
 
     const toggleComplete = async () => {
         setIsCompleted(!isCompleted);

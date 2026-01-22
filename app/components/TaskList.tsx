@@ -32,7 +32,11 @@ export default function TaskList({userRole}:TaskListProps) {
     return (
         <ul className="space-y-4">
             {tasks.map((task) => (
-                <TaskItem key={task.id} task={task} />
+                <TaskItem 
+                key={task.id} 
+                task={task}
+                userRole={userRole} 
+                />
             ))}
         </ul>
     );
