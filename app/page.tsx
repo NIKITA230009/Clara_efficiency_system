@@ -100,15 +100,6 @@ function TaskBoard() {
           {/* КАЛЕНДАРЬ - ТЕПЕРЬ В ШАПКЕ ДЛЯ ВСЕХ */}
           <div className="flex items-center gap-1 mt-1">
             <span className="text-xs text-gray-500">Задачи на:</span>
-            <DatePicker
-              selected={selectedDate}
-              onChange={(date: Date | null) => setSelectedDate(date || new Date())}
-              locale="ru"
-              dateFormat="d MMMM"
-              customInput={
-                <button className="text-xs font-bold text-blue-600 underline decoration-dotted italic">
-                  {formattedDateString}
-                </button>} />
           </div>
 
           {/* БЛОК ОТЛАДКИ - ТЕПЕРЬ ТЫ УВИДИШЬ ВСЁ НА ЭКРАНЕ */}
@@ -149,7 +140,18 @@ function TaskBoard() {
           (
             <>
               <div className="bg-white p-4 rounded-xl shadow-sm border">
-                <h2 className="text-sm font-semibold mb-3">Текущие задачи на {currentDate}</h2>
+                <h2 className="text-sm font-semibold mb-3">Текущие задачи на</h2>
+
+                <DatePicker
+                  selected={selectedDate}
+                  onChange={(date: Date | null) => setSelectedDate(date || new Date())}
+                  locale="ru"
+                  dateFormat="d MMMM"
+                  customInput={
+                    <button className="text-xs font-bold text-blue-600 underline decoration-dotted italic">
+                      {formattedDateString}
+                    </button>} />
+                    
                 <TaskList userRole={userRole} />
               </div>
 
