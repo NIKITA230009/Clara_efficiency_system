@@ -5,12 +5,13 @@ import { collection, deleteDoc, doc, onSnapshot, updateDoc } from 'firebase/fire
 import { db } from '@/app/lib/firebase';
 import { Employee } from '../types/employee';
 import { Task } from '../types/task';
+import { Penalty } from '../types/penalty';
 
 
 export default function EmployeeTable() {
     const [employees, setEmployees] = useState<Employee[]>([]);
     const [tasks, setTasks] = useState<Task[]>([]);
-
+    const [penalties, setPenalties] = useState<Penalty[]>([]);
     // --- 1. ФУНКЦИИ ВЗАИМОДЕЙСТВИЯ (Логика DB) ---
 
     // Функция переключения статуса (Выполнено/Не выполнено)
@@ -50,11 +51,17 @@ export default function EmployeeTable() {
             const taskList = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as unknown as Task));
             setTasks(taskList);
         });
+        // 2. Добавляем подписку на замечания
+        const unsubPenalties = onSnapshot(collection(db, 'penalties'), (snapshot) => {
+            const penaltyList = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as unknown as Penalty));
+            setPenalties(penaltyList);
+        });
 
         // Отписываемся от обеих при закрытии страницы
         return () => {
             unsubEmp();
             unsubTasks();
+            unsubPenalties(); // Не забываем отписаться
         };
     }, []);
 
@@ -67,13 +74,14 @@ export default function EmployeeTable() {
                         <th className="px-4 py-2 border-b text-left text-sm font-semibold text-gray-700">Должность</th>
                         <th className="px-4 py-2 border-b text-left text-sm font-semibold text-gray-700">Премия</th>
                         <th className="px-4 py-2 border-b text-left text-sm font-semibold text-gray-700">Активная задача</th>
+                        <th className="px-4 py-2 border-b text-left text-sm font-semibold text-gray-700">Замечания</th>
                     </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-100">
                     {employees.map((emp) => {
                         // ТЕПЕРЬ МОЖНО: мы добавили фигурные скобки и return
                         const employeeTasks = tasks.filter(t => t.employeeId === emp.id);
-
+                        
                         return (
                             <tr key={emp.id} className="hover:bg-gray-50 transition-colors text-black">
                                 <td className="px-4 py-3 text-sm">{emp.fullName}</td>

@@ -113,8 +113,9 @@ function TaskBoard() {
           </>
         ) :
           (
-            <div className="bg-blue-50 p-4 rounded-xl border border-blue-100 text-sm text-blue-800">
-              ℹ️ Вы сотрудник.
+            <div className="bg-white p-4 rounded-xl shadow-sm border">
+              <h2 className="text-sm font-semibold mb-3">Текущие задачи</h2>
+              <EmployeeTable />
             </div>
           )}
         {/* 
