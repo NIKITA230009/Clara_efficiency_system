@@ -140,7 +140,7 @@ function TaskBoard() {
           (
             <>
               <div className="bg-white p-4 rounded-xl shadow-sm border">
-                <h2 className="text-sm font-semibold mb-3">Текущие задачи на
+                <h2 className="text-sm font-semibold mb-3">Текущие задачи на {" "}
                   <DatePicker
                     selected={selectedDate}
                     onChange={(date: Date | null) => setSelectedDate(date || new Date())}
