@@ -56,7 +56,7 @@ export default function AddEmployeeForm() {
         <form onSubmit={handleSubmit} className="space-y-4">
             <div>
                 <label className="block text-sm font-medium mb-1">
-                    ФИО сотрудника *
+                    ФИО сотрудника
                 </label>
                 <input
                     type="text"
@@ -91,7 +91,6 @@ export default function AddEmployeeForm() {
                     onChange={(e) => setEmployeeBasePremium(Number(e.target.value))}
                     placeholder="0"
                     className="w-full px-3 py-2 border rounded-lg"
-                    min="0"
                 />
             </div>
 
