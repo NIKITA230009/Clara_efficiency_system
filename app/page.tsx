@@ -12,13 +12,13 @@ import TaskList from "./components/TaskList";
 import EmployeeTable from './components/EmployeeTable';
 import { getUserRole } from './lib/firebase';
 import AddEmployeeForm from './components/AddEmployee';
+import MyPenalties from './components/MyPenalties'; // ✅ ИМПОРТИРУЕМ КОМПОНЕНТ
 
 registerLocale('ru', ru);
 
 const TaskBoardClient = dynamic(() => Promise.resolve(TaskBoard), { ssr: false });
 
-// ⬇️⬇️⬇️ ВСТАВЬТЕ ЭТОТ КОМПОНЕНТ ПРЯМО СЮДА ⬇️⬇️⬇️
-// Простой переключатель ролей для тестирования
+// Переключатель ролей для тестирования
 function RoleSwitcher({ currentRole, onRoleChange }: { 
   currentRole: string; 
   onRoleChange: (role: string) => void;
@@ -82,17 +82,11 @@ function RoleSwitcher({ currentRole, onRoleChange }: {
     </div>
   );
 }
-// ⬆️⬆️⬆️ КОНЕЦ КОМПОНЕНТА ⬆️⬆️⬆️
 
 function TaskBoard() {
   const [groupId, setGroupId] = useState<string | null>(null);
   const [userRole, setUserRole] = useState<string>("EMPLOYEE");
   const [isLoading, setIsLoading] = useState(true);
-  const currentDate = new Date().toLocaleDateString('ru-RU', {
-    day: 'numeric',
-    month: 'long',
-  });
-
   const [selectedDate, setSelectedDate] = useState(new Date());
   const [debugData, setDebugData] = useState<string>("Жду данные...");
 
@@ -112,7 +106,6 @@ function TaskBoard() {
         setDebugData(`Найден ID: ${userId || 'НЕТ'}\nИсточник LP: ${!!lp}\nИсточник Window: ${!!((window as any).Telegram?.WebApp)}`);
 
         if (userId) {
-          // ⬇️⬇️⬇️ ИЗМЕНЕНИЕ: сначала проверяем localStorage ⬇️⬇️⬇️
           const savedRole = localStorage.getItem(`test_role_${userId}`);
           if (savedRole) {
             setUserRole(savedRole);
@@ -140,10 +133,8 @@ function TaskBoard() {
     setTimeout(initApp, 100);
   }, [lp]);
 
-  // ⬇️⬇️⬇️ Функция для смены роли ⬇️⬇️⬇️
   const handleRoleChange = (newRole: string) => {
     setUserRole(newRole);
-    // Сохраняем в localStorage для тестирования
     const userId = (lp as any)?.initData?.user?.id?.toString() || 
                    (typeof window !== 'undefined' ? (window as any).Telegram?.WebApp?.initDataUnsafe?.user?.id?.toString() : null);
     if (userId) {
@@ -163,22 +154,17 @@ function TaskBoard() {
       <header className="bg-white border-b p-6 flex justify-between items-center">
         <div>
           <h1 className="text-xl font-bold">Clara Efficiency</h1>
-
-          {/* БЛОК ОТЛАДКИ */}
           <pre className="text-[10px] bg-gray-100 p-1 mt-1 rounded text-red-600 overflow-x-auto max-w-[200px]">
             {debugData}
           </pre>
-
           <p className="text-xs text-gray-500 mt-1">Группа: {groupId || "Личное"}</p>
         </div>
         
         <div className="flex items-center gap-3">
-          {/* ⬇️⬇️⬇️ ДОБАВЛЯЕМ ПЕРЕКЛЮЧАТЕЛЬ СЮДА ⬇️⬇️⬇️ */}
           <RoleSwitcher 
             currentRole={userRole} 
             onRoleChange={handleRoleChange}
           />
-          
           <span className={`text-[10px] font-bold px-2 py-1 rounded uppercase ${
             userRole === 'ADMIN' ? 'bg-red-100 text-red-700' : 
             userRole === 'MANAGER' ? 'bg-yellow-100 text-yellow-700' : 
@@ -190,11 +176,10 @@ function TaskBoard() {
       </header>
 
       <main className="p-6 flex flex-col gap-6">
-        {/* ВЕСЬ ОСТАЛЬНОЙ КОД БЕЗ ИЗМЕНЕНИЙ */}
+        {/* ✅ АДМИН И МЕНЕДЖЕР */}
         {(userRole === 'ADMIN' || userRole === 'MANAGER') ? (
           <>
-
-<div className="bg-white p-4 rounded-xl shadow-sm border">
+            <div className="bg-white p-4 rounded-xl shadow-sm border">
               <h2 className="text-sm font-semibold mb-3">Новый сотрудник</h2>
               <AddEmployeeForm />
             </div>
@@ -214,32 +199,33 @@ function TaskBoard() {
               <EmployeeTable />
             </div>
           </>
-        ) :
-          (
-            <>
-              <div className="bg-white p-4 rounded-xl shadow-sm border">
-                <h2 className="text-sm font-semibold mb-3">Текущие задачи на {" "}
-                  <DatePicker
-                    selected={selectedDate}
-                    onChange={(date: Date | null) => setSelectedDate(date || new Date())}
-                    locale="ru"
-                    dateFormat="d MMMM"
-                    customInput={
-                      <button className="text-xs font-bold text-blue-600 underline decoration-dotted italic">
-                        {formattedDateString}
-                      </button>
-                    }
-                  />
-                </h2>
-                <TaskList userRole={userRole} selectedDate={selectedDate} />
-              </div>
+        ) : (
+          /* ✅ СОТРУДНИК */
+          <>
+            <div className="bg-white p-4 rounded-xl shadow-sm border">
+              <h2 className="text-sm font-semibold mb-3">
+                Текущие задачи на{" "}
+                <DatePicker
+                  selected={selectedDate}
+                  onChange={(date: Date | null) => setSelectedDate(date || new Date())}
+                  locale="ru"
+                  dateFormat="d MMMM"
+                  customInput={
+                    <button className="text-xs font-bold text-blue-600 underline decoration-dotted italic">
+                      {formattedDateString}
+                    </button>
+                  }
+                />
+              </h2>
+              <TaskList userRole={userRole} selectedDate={selectedDate} />
+            </div>
 
-              <div className="bg-white p-4 rounded-xl shadow-sm border">
-                <h2 className="text-sm font-semibold mb-3">Список замечаний</h2>
-                <EmployeeTable />
-              </div>
-            </>
-          )}
+            {/* ✅ ТОЛЬКО ДЛЯ СОТРУДНИКА - МОИ ЗАМЕЧАНИЯ */}
+            <div className="bg-white p-4 rounded-xl shadow-sm border border-red-100">
+              <MyPenalties />
+            </div>
+          </>
+        )}
       </main>
     </div>
   );
