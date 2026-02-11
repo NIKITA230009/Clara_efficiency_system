@@ -11,6 +11,7 @@ import PenaltyForm from "./components/PenaltyForm";
 import TaskList from "./components/TaskList";
 import EmployeeTable from './components/EmployeeTable';
 import { getUserRole } from './lib/firebase';
+import AddEmployeeForm from './components/AddEmployee';
 
 registerLocale('ru', ru);
 
@@ -192,6 +193,12 @@ function TaskBoard() {
         {/* ВЕСЬ ОСТАЛЬНОЙ КОД БЕЗ ИЗМЕНЕНИЙ */}
         {(userRole === 'ADMIN' || userRole === 'MANAGER') ? (
           <>
+
+<div className="bg-white p-4 rounded-xl shadow-sm border">
+              <h2 className="text-sm font-semibold mb-3">Новый сотрудник</h2>
+              <AddEmployeeForm />
+            </div>
+
             <div className="bg-white p-4 rounded-xl shadow-sm border">
               <h2 className="text-sm font-semibold mb-3">Новая задача</h2>
               <TaskForm />
