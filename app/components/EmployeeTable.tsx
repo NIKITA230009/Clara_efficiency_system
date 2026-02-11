@@ -7,19 +7,15 @@ import { Employee } from '../types/employee';
 import { Task } from '../types/task';
 import { Penalty } from '../types/penalty';
 
-
 export default function EmployeeTable() {
     const [employees, setEmployees] = useState<Employee[]>([]);
     const [tasks, setTasks] = useState<Task[]>([]);
     const [penalties, setPenalties] = useState<Penalty[]>([]);
-    // --- 1. ФУНКЦИИ ВЗАИМОДЕЙСТВИЯ (Логика DB) ---
 
     // Функция переключения статуса (Выполнено/Не выполнено)
     const toggleTask = async (taskId: string, currentStatus: boolean) => {
         try {
-            // doc создаёт "ссылку" на конкретный документ по его ID
             const taskRef = doc(db, 'tasks', taskId);
-            // updateDoc меняет только указанные поля
             await updateDoc(taskRef, {
                 completed: !currentStatus
             });
@@ -32,38 +28,58 @@ export default function EmployeeTable() {
     const deleteTask = async (taskId: string) => {
         if (!confirm("Удалить задачу?")) return;
         try {
-            // deleteDoc полностью стирает документ по ссылке
             await deleteDoc(doc(db, 'tasks', taskId));
         } catch (err) {
             console.error("Ошибка при удалении задачи:", err);
         }
     };
 
+    // Функция удаления замечания
+    const deletePenalty = async (penaltyId: string) => {
+        if (!confirm("Удалить замечание?")) return;
+        try {
+            await deleteDoc(doc(db, 'penalties', penaltyId));
+        } catch (err) {
+            console.error("Ошибка при удалении замечания:", err);
+        }
+    };
+
     useEffect(() => {
-        // Подписка №1: Слушаем сотрудников
+        // Подписка на сотрудников
         const unsubEmp = onSnapshot(collection(db, 'employees'), (snapshot) => {
             const empList = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as unknown as Employee));
             setEmployees(empList);
         });
 
-        // Подписка №2: Слушаем задачи
+        // Подписка на задачи
         const unsubTasks = onSnapshot(collection(db, 'tasks'), (snapshot) => {
             const taskList = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as unknown as Task));
             setTasks(taskList);
         });
-        // 2. Добавляем подписку на замечания
+
+        // Подписка на замечания
         const unsubPenalties = onSnapshot(collection(db, 'penalties'), (snapshot) => {
             const penaltyList = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as unknown as Penalty));
             setPenalties(penaltyList);
         });
 
-        // Отписываемся от обеих при закрытии страницы
         return () => {
             unsubEmp();
             unsubTasks();
-            unsubPenalties(); // Не забываем отписаться
+            unsubPenalties();
         };
     }, []);
+
+    // Функция для форматирования даты
+    const formatDate = (date: any) => {
+        if (!date) return '';
+        try {
+            const d = date.toDate ? date.toDate() : new Date(date);
+            return d.toLocaleDateString('ru-RU', { day: 'numeric', month: 'short' });
+        } catch {
+            return '';
+        }
+    };
 
     return (
         <div className="overflow-x-auto mt-4">
@@ -79,17 +95,18 @@ export default function EmployeeTable() {
                 </thead>
                 <tbody className="divide-y divide-gray-100">
                     {employees.map((emp) => {
-                        // ТЕПЕРЬ МОЖНО: мы добавили фигурные скобки и return
                         const employeeTasks = tasks.filter(t => t.employeeId === emp.id);
+                        const employeePenalties = penalties.filter(p => p.employeeId === emp.id);
                         
                         return (
                             <tr key={emp.id} className="hover:bg-gray-50 transition-colors text-black">
                                 <td className="px-4 py-3 text-sm">{emp.fullName}</td>
                                 <td className="px-4 py-3 text-sm text-gray-600">{emp.position}</td>
                                 <td className="px-4 py-3 text-sm font-medium text-green-600">
-                                    {emp.basePremium} ₽
+                                    {emp.basePremium || 0} ₽
                                 </td>
-                                {/* Внутри employees.map(...) в ячейке с задачами */}
+                                
+                                {/* Колонка с задачами */}
                                 <td className="px-4 py-3 text-sm">
                                     {employeeTasks.length > 0 ? (
                                         <div className="flex flex-col gap-2">
@@ -109,10 +126,44 @@ export default function EmployeeTable() {
                                                             {task.title}
                                                         </span>
                                                     </div>
-
-                                                    {/* Кнопка удаления (появляется при наведении или просто маленькая иконка) */}
                                                     <button
                                                         onClick={() => deleteTask(task.id)}
+                                                        className="text-red-400 hover:text-red-600 ml-2 text-[10px]"
+                                                    >
+                                                        ✕
+                                                    </button>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    ) : (
+                                        <span className="text-gray-300 italic">—</span>
+                                    )}
+                                </td>
+
+                                {/* ✅ КОЛОНКА С ЗАМЕЧАНИЯМИ - ИСПРАВЛЕНО */}
+                                <td className="px-4 py-3 text-sm">
+                                    {employeePenalties.length > 0 ? (
+                                        <div className="flex flex-col gap-2">
+                                            {employeePenalties.map(penalty => (
+                                                <div
+                                                    key={penalty.id}
+                                                    className="flex items-center justify-between bg-red-50 p-2 rounded border border-red-100"
+                                                >
+                                                    <div className="flex flex-col">
+                                                        <span className="text-xs font-medium text-red-700">
+                                                            {penalty.type || 'Замечание'}
+                                                        </span>
+                                                        {penalty.comment && (
+                                                            <span className="text-[10px] text-gray-600">
+                                                                {penalty.comment}
+                                                            </span>
+                                                        )}
+                                                        <span className="text-[9px] text-gray-400 mt-1">
+                                                            {formatDate(penalty.createdAt)}
+                                                        </span>
+                                                    </div>
+                                                    <button
+                                                        onClick={() => deletePenalty(penalty.id)}
                                                         className="text-red-400 hover:text-red-600 ml-2 text-[10px]"
                                                     >
                                                         ✕
