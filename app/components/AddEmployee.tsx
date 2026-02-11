@@ -36,8 +36,9 @@ export default function AddEmployeeForm() {
             await addDoc(collection(db, 'employees'), {
                 fullName: employeeName,
                 position: employeePosition || "Сотрудник", // Значение по умолчанию
-                basePremium: employeeBasePremium || 0, // Если null, сохраняем 0
-                createdAt: new Date(),
+                basePremium: employeeBasePremium || 0,
+                isActive: true,
+                task: ""
             });
 
             // Очистка формы
@@ -77,7 +78,7 @@ export default function AddEmployeeForm() {
                     type="text"
                     value={employeePosition}
                     onChange={(e) => setEmployeePosition(e.target.value)}
-                    placeholder="Менеджер"
+                    placeholder="Грузчик"
                     className="w-full px-3 py-2 border rounded-lg"
                 />
             </div>
