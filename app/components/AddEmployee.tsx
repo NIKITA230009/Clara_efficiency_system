@@ -8,11 +8,10 @@ import { Employee } from '../types/employee';
 export default function AddEmployeeForm() {
     const [employeeName, setEmployeeName] = useState<string>('');
     const [employeePosition, setEmployeePosition] = useState('');
-    const [employeeBasePremium, setEmployeeBasePremium] = useState<number>();
-    const [isLoading, setIsLoading] = useState(false);
+    const [employeeBasePremium, setEmployeeBasePremium] = useState<number | null>(null); const [isLoading, setIsLoading] = useState(false);
     const [employees, setEmployees] = useState<Employee[]>([]);
 
-// Подгружаем список сотрудников
+    // Подгружаем список сотрудников
     useEffect(() => {
         const fetchEmployees = async () => {
             const querySnapshot = await getDocs(collection(db, 'employees'));
@@ -25,7 +24,7 @@ export default function AddEmployeeForm() {
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
 
-          // Валидация
+        // Валидация
         if (!employeeName.trim()) {
             alert("Введите имя сотрудника");
             return;
@@ -43,7 +42,7 @@ export default function AddEmployeeForm() {
             // Очистка формы
             setEmployeeName('');
             setEmployeePosition('');
-            setEmployeeBasePremium(undefined);
+            setEmployeeBasePremium(null);
             alert("Работник добавлен успешно");
         } catch (err) {
             console.error('Error adding employee:', err);
@@ -87,20 +86,22 @@ export default function AddEmployeeForm() {
                 </label>
                 <input
                     type="number"
-                    value={employeeBasePremium}
-                    onChange={(e) => setEmployeeBasePremium(Number(e.target.value))}
+                    value={employeeBasePremium === null ? '' : employeeBasePremium}
+                    onChange={(e) => {
+                        const value = e.target.value;
+                        setEmployeeBasePremium(value === '' ? null : Number(value));
+                    }}
                     placeholder="0"
                     className="w-full px-3 py-2 border rounded-lg"
                 />
-            </div>
 
-            <button
-                type="submit"
-                disabled={isLoading}
-                className="w-full bg-blue-600 text-white py-2 px-4 rounded-lg hover:bg-blue-700 disabled:bg-gray-400"
-            >
-                {isLoading ? 'Добавление...' : 'Добавить сотрудника'}
-            </button>
+                <button
+                    type="submit"
+                    disabled={isLoading}
+                    className="w-full bg-blue-600 text-white py-2 px-4 rounded-lg hover:bg-blue-700 disabled:bg-gray-400"
+                >
+                    {isLoading ? 'Добавление...' : 'Добавить сотрудника'}
+                </button>
         </form>
     );
 }
