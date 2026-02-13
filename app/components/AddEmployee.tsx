@@ -11,6 +11,7 @@ export default function AddEmployeeForm() {
     const [employeeBasePremium, setEmployeeBasePremium] = useState<number | null>(null);
     const [isLoading, setIsLoading] = useState(false);
     const [employees, setEmployees] = useState<Employee[]>([]);
+    const [employeeTelegramId, setEmployeeTelegramId] = useState<string>('');
 
     // Подгружаем список сотрудников
     useEffect(() => {
@@ -38,6 +39,7 @@ export default function AddEmployeeForm() {
                 position: employeePosition || "Сотрудник", // Значение по умолчанию
                 basePremium: employeeBasePremium || 0,
                 isActive: true,
+                telegramId: employeeTelegramId || null, // ✅ Добавляем поле
                 task: ""
             });
 
@@ -99,6 +101,21 @@ export default function AddEmployeeForm() {
                     min="0"
                     step="1"
                 />
+            </div>
+            <div>
+                <label className="block text-sm font-medium mb-1">
+                    Telegram ID (опционально)
+                </label>
+                <input
+                    type="text"
+                    value={employeeTelegramId}
+                    onChange={(e) => setEmployeeTelegramId(e.target.value)}
+                    placeholder="123456789"
+                    className="w-full px-3 py-2 border rounded-lg"
+                />
+                <p className="text-xs text-gray-500 mt-1">
+                    ID можно получить у @userinfobot
+                </p>
             </div>
 
             {/* ⚠️ ВАЖНО: Кнопка должна быть НА ОДНОМ УРОВНЕ с div, не внутри него! */}

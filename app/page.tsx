@@ -200,7 +200,6 @@ function TaskBoard() {
             </div>
           </>
         ) : (
-          /* ✅ СОТРУДНИК */
           <>
             <div className="bg-white p-4 rounded-xl shadow-sm border">
               <h2 className="text-sm font-semibold mb-3">
