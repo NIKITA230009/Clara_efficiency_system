@@ -21,6 +21,14 @@ export default function MyPenalties() {
 
     const lp = useLaunchParams();
 
+    // Подготовка данных для графика
+const chartData = [
+  { key: 'Критические', data: stats.critical },
+  { key: 'Серьезные', data: stats.serious },
+  { key: 'Средние', data: stats.medium },
+  { key: 'Мелкие', data: stats.minor },
+];
+
     // Получаем ID текущего сотрудника
     useEffect(() => {
         const getCurrentEmployeeId = async () => {
@@ -244,10 +252,15 @@ export default function MyPenalties() {
                     </p>
                 </div>
             )}
-             <div className="p-4">
-            <IncidentSummaryCard />
-        </div>
+            <div className="p-4">
+  <IncidentSummaryCard 
+    data={chartData}
+    title="Распределение по типам"
+    // showMetrics={true} // если хотите показать маленькие цифры под графиком
+  />
+</div>
         </div>
         
     );
+    
 }
