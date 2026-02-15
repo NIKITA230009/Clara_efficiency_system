@@ -25,7 +25,7 @@ export default function MyPenalties() {
             try {
                 // Получаем Telegram ID
                 let telegramId = (lp as any)?.initData?.user?.id?.toString();
-                
+
                 if (!telegramId && typeof window !== 'undefined') {
                     const tg = (window as any).Telegram?.WebApp;
                     telegramId = tg?.initDataUnsafe?.user?.id?.toString();
@@ -36,7 +36,7 @@ export default function MyPenalties() {
                     const employeesRef = collection(db, 'employees');
                     const q = query(employeesRef, where('telegramId', '==', telegramId));
                     const querySnapshot = await getDocs(q);
-                    
+
                     if (!querySnapshot.empty) {
                         const employee = querySnapshot.docs[0];
                         setEmployeeId(employee.id);
@@ -71,7 +71,7 @@ export default function MyPenalties() {
             } as Penalty));
 
             setPenalties(penaltiesList);
-            
+
             // Подсчитываем статистику
             const newStats = {
                 total: penaltiesList.length,
@@ -80,7 +80,7 @@ export default function MyPenalties() {
                 minor: penaltiesList.filter(p => p.type === 'Мелкое').length
             };
             setStats(newStats);
-            
+
             setIsLoading(false);
         }, (error) => {
             console.error('Ошибка при загрузке замечаний:', error);
@@ -112,6 +112,8 @@ export default function MyPenalties() {
                 return 'bg-red-100 text-red-800 border-red-200';
             case 'серьезное':
                 return 'bg-orange-100 text-orange-800 border-orange-200';
+            case 'среднее':
+                return 'bg-blue-100 text-blue-800 border-blue-200';
             case 'мелкое':
                 return 'bg-yellow-100 text-yellow-800 border-yellow-200';
             default:
@@ -155,7 +157,7 @@ export default function MyPenalties() {
                     </svg>
                     Мои замечания
                 </h2>
-                
+
                 <div className="grid grid-cols-4 gap-2">
                     <div className="bg-white bg-opacity-70 rounded-lg p-2 text-center">
                         <div className="text-2xl font-bold text-gray-900">{stats.total}</div>
@@ -208,11 +210,11 @@ export default function MyPenalties() {
                                                 {formatDate(penalty.createdAt)}
                                             </span>
                                         </div>
-                                        
+
                                         <h4 className="text-sm font-semibold text-gray-900 mb-1">
                                             {penalty.title}
                                         </h4>
-                                        
+
                                         {penalty.comment && (
                                             <p className="text-xs text-gray-700 bg-white bg-opacity-50 p-2 rounded mt-1">
                                                 {penalty.comment}

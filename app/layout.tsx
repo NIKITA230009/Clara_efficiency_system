@@ -23,7 +23,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="ru">
+    <html lang="ru" suppressHydrationWarning> 
       <head>
         {/* 2. ДОБАВЬ ВОТ ЭТОТ БЛОК. Без него Telegram не видит приложение */}
         <Script
