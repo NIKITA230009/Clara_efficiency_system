@@ -5,6 +5,7 @@ import { collection, query, where, onSnapshot, orderBy, getDocs } from 'firebase
 import { db } from '@/app/lib/firebase';
 import { Penalty } from '../types/penalty';
 import { useLaunchParams } from "@telegram-apps/sdk-react";
+import IncidentSummaryCard from '@/app/components/horizontal-bar-chart';
 
 export default function MyPenalties() {
     const [penalties, setPenalties] = useState<Penalty[]>([]);
@@ -168,15 +169,15 @@ export default function MyPenalties() {
                     </div>
                     <div className="bg-red-100 bg-opacity-70 rounded-lg p-2 text-center">
                         <div className="text-2xl font-bold text-red-700">{stats.critical}</div>
-                        <div className="text-xs text-red-600">Критических</div>
+                        <div className="text-xs text-red-600">Крит</div>
                     </div>
                     <div className="bg-orange-100 bg-opacity-70 rounded-lg p-2 text-center">
                         <div className="text-2xl font-bold text-orange-700">{stats.serious}</div>
-                        <div className="text-xs text-orange-600">Серьезных</div>
+                        <div className="text-xs text-orange-600">Серьез.</div>
                     </div>
                     <div className="bg-blue-100 bg-opacity-70 rounded-lg p-2 text-center">
                         <div className="text-2xl font-bold text-blue-700">{stats.medium}</div> {/* Исправлено: stats.medium */}
-                        <div className="text-xs text-blue-600">Средних</div>
+                        <div className="text-xs text-blue-600">Сред.</div>
                     </div>
                     <div className="bg-yellow-100 bg-opacity-70 rounded-lg p-2 text-center">
                         <div className="text-2xl font-bold text-yellow-700">{stats.minor}</div>
@@ -243,6 +244,10 @@ export default function MyPenalties() {
                     </p>
                 </div>
             )}
+             <div className="p-4">
+            <IncidentSummaryCard />
         </div>
+        </div>
+        
     );
 }
