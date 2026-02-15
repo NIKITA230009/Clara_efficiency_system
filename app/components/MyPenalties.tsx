@@ -14,6 +14,7 @@ export default function MyPenalties() {
         total: 0,
         critical: 0,
         serious: 0,
+        medium: 0,
         minor: 0
     });
 
@@ -77,7 +78,9 @@ export default function MyPenalties() {
                 total: penaltiesList.length,
                 critical: penaltiesList.filter(p => p.type === 'Критическое').length,
                 serious: penaltiesList.filter(p => p.type === 'Серьезное').length,
-                minor: penaltiesList.filter(p => p.type === 'Мелкое').length
+                minor: penaltiesList.filter(p => p.type === 'Мелкое').length,
+                medium: penaltiesList.filter(p => p.type === 'Среднее').length
+
             };
             setStats(newStats);
 
@@ -158,7 +161,7 @@ export default function MyPenalties() {
                     Мои замечания
                 </h2>
 
-                <div className="grid grid-cols-4 gap-2">
+                <div className="grid grid-cols-5 gap-2">
                     <div className="bg-white bg-opacity-70 rounded-lg p-2 text-center">
                         <div className="text-2xl font-bold text-gray-900">{stats.total}</div>
                         <div className="text-xs text-gray-600">Всего</div>
@@ -170,6 +173,10 @@ export default function MyPenalties() {
                     <div className="bg-orange-100 bg-opacity-70 rounded-lg p-2 text-center">
                         <div className="text-2xl font-bold text-orange-700">{stats.serious}</div>
                         <div className="text-xs text-orange-600">Серьезных</div>
+                    </div>
+                    <div className="bg-blue-100 bg-opacity-70 rounded-lg p-2 text-center">
+                        <div className="text-2xl font-bold text-blue-700">{stats.medium}</div> {/* Исправлено: stats.medium */}
+                        <div className="text-xs text-blue-600">Средних</div>
                     </div>
                     <div className="bg-yellow-100 bg-opacity-70 rounded-lg p-2 text-center">
                         <div className="text-2xl font-bold text-yellow-700">{stats.minor}</div>

@@ -80,7 +80,7 @@ export default function AddEmployeeForm() {
                     type="text"
                     value={employeePosition}
                     onChange={(e) => setEmployeePosition(e.target.value)}
-                    placeholder="Грузчик"
+                                placeholder="Грузчик"
                     className="w-full px-3 py-2 border rounded-lg"
                 />
             </div>
